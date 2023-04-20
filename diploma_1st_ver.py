@@ -60,8 +60,7 @@ while success and not clicked:
     # Медианное размытие для уменьшение шума
     img = cv2.medianBlur(gray, 37)
     # Обнаружение кругов
-    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT,
-                              1, 50, param1=120, param2=40)
+    circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 50, param1=120, param2=40)
 
     # Если обнаружен хотя бы один круг
     if not circles is None:
@@ -83,7 +82,11 @@ while success and not clicked:
             dominant_color = get_dominant_color(square, 2)
             # Если доминирует красный, то из 6 знаков это будет знак СТОП
             if dominant_color[2] > 100:
-                print("стоп")
+                print("знак 3.1. Въезд запрещен.")
+                z31 = cv2.imread('знак 3.1. Въезд запрещен.png')
+                cv2.imshow('знак 3.1. Въезд запрещен', z31)
+                cv2.waitKey(1000)
+
             # Если доминирующий цвет синий, то остается определить направление одной или двух одновременно стрелок
             elif dominant_color[0] > 80:
                 zone_0 = square[square.shape[0]*3//8:square.shape[0]
@@ -100,16 +103,31 @@ while success and not clicked:
 
                 if zone_1_color[2] < 60:
                     if sum(zone_0_color) > sum(zone_2_color):
-                        print("налево")
+                        print("знак 4.1.3. Движение налево.")
+                        z413 = cv2.imread('знак 4.1.3. Движение налево.png')
+                        cv2.imshow('знак 4.1.3. Движение налево', z413)
+                        cv2.waitKey(1000)
                     else:
-                        print("направо")
+                        print("знак 4.1.2. Движение направо.")
+                        z412 = cv2.imread('знак 4.1.2. Движение направо.png')
+                        cv2.imshow('знак 4.1.2. Движение направо', z412)
+                        cv2.waitKey(1000)
                 else:
                     if sum(zone_1_color) > sum(zone_0_color) and sum(zone_1_color) > sum(zone_2_color):
-                        print("прямо")
+                        print("знак 4.1.1. Движение прямо.")
+                        z411 = cv2.imread('знак 4.1.1. Движение прямо.png')
+                        cv2.imshow('знак 4.1.1. Движение прямо', z411)
+                        cv2.waitKey(1000)
                     elif sum(zone_0_color) > sum(zone_2_color):
-                        print("прямо или налево")
+                        print("знак 4.1.5. Движение прямо или налево")
+                        z415 = cv2.imread('знак 4.1.5. Движение прямо или налево.png')
+                        cv2.imshow('знак 4.1.5. Движение прямо или налево', z415)
+                        cv2.waitKey(1000)
                     else:
-                        print("прямо или направо")
+                        print("знак 4.1.4. Движение прямо или направо.")
+                        z414 = cv2.imread('знак 4.1.4. Движение прямо или направо.png')
+                        cv2.imshow('знак 4.1.4. Движение прямо или направо', z414)
+                        cv2.waitKey(1000)
             # Если программа не может распознать знак, то она обязательно об этом сообщит
             else:
                 print("не распознано")
