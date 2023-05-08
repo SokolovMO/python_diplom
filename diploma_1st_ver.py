@@ -22,11 +22,10 @@ def get_dominant_color(image, n_colors):
 # cameraCapture = cv2.VideoCapture(0)
 # cv2.namedWindow('webcam')
 
-# Создание конвейера для RealSense
+# Настройка потоков
 pipeline = rs.pipeline()
 config = rs.config()
-
-# Настройка конфигурации конвейера
+config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
 config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
 # Запуск конвейера
@@ -36,9 +35,13 @@ try:
     while True:
         # success, frame = cameraCapture.read()
 
-        # Получение кадра с RealSense камеры
+        # Чтение кадров
         frames = pipeline.wait_for_frames()
+        depth_frame = frames.get_depth_frame()
         color_frame = frames.get_color_frame()
+
+        # Преобразование кадров в изображения
+        depth_image = np.asanyarray(depth_frame.get_data())
         frame = np.asanyarray(color_frame.get_data())
 
         # Преобразование в оттенки серого
@@ -46,7 +49,7 @@ try:
         # Медианное размытие для уменьшение шума
         img = cv2.medianBlur(gray, 37)
         # Обнаружение кругов
-        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 50, param1=120, param2=40)
+        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 50, param1=180, param2=40, minRadius=1, maxRadius=200)
 
         # Если обнаружен хотя бы один круг
         if not circles is None:
@@ -62,12 +65,17 @@ try:
             # Координаты и радиус наибольшего круга
             x, y, r = circles[:, :, :][0][max_i]
             if y > r and x > r:
+                # Получение глубины (расстояния) до центра знака
+                distance = depth_frame.get_distance(x, y)
+                print(f"Расстояние до знака: {distance:.2f} метра")
+
                 # Создание области в виде квадрата для самого большого круга
                 square = frame[y-r:y+r, x-r:x+r]
                 # Доминирующий цвет в выбранной области. В OpenCV BGR, 0 - blue, 1 - green, 2 - red
                 dominant_color = get_dominant_color(square, 2)
                 # Если доминирует красный, то из 6 знаков это будет знак СТОП
-                if dominant_color[2] > 100:
+                # if dominant_color[2] > 100:
+                if dominant_color[2] > 130:
                     print("знак 3.1. Въезд запрещен.")
                     z31_stok = cv2.imread('z31.png')
                     z31 = cv2.resize(z31_stok, (500, 500))
