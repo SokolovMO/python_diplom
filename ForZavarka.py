@@ -22,12 +22,14 @@ def setup_realsense():
     pipeline.start(config)
     return pipeline
 
+# capture frames from realsense and detect depth and colors
 def get_frames(pipeline):
     frames = pipeline.wait_for_frames()
     depth_frame = frames.get_depth_frame()
     color_frame = frames.get_color_frame()
     return depth_frame, color_frame
 
+# processing frames & noise reduction
 def process_frames(depth_frame, color_frame):
     depth_image = np.asanyarray(depth_frame.get_data())
     frame = np.asanyarray(color_frame.get_data())
@@ -36,7 +38,7 @@ def process_frames(depth_frame, color_frame):
     circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 50, param1=180, param2=40, minRadius=1, maxRadius=200)
     return circles, frame, depth_frame
 
-
+# detect circles
 def process_circles(circles, frame, depth_frame):
     if not circles is None:
         circles = np.uint16(np.around(circles))
@@ -49,6 +51,7 @@ def process_circles(circles, frame, depth_frame):
         if y > r and x > r:
             process_detected_object(x, y, r, frame, depth_frame)
 
+# output of the depth value and determination of the dominant color
 def process_detected_object(x, y, r, frame, depth_frame):
     distance = depth_frame.get_distance(x, y)
     print(f"depth: {distance:.2f} m")
@@ -56,6 +59,7 @@ def process_detected_object(x, y, r, frame, depth_frame):
     dominant_color = get_dominant_color(square, 2)
     process_dominant_color(dominant_color, square)
 
+# checking the dominant color
 def process_dominant_color(dominant_color, square):
     if dominant_color[2] > 100:
         print("31")
@@ -64,9 +68,7 @@ def process_dominant_color(dominant_color, square):
     else:
         print("not possible")
 
-
-
-
+# identification of arrows on blue signs
 def process_blue_color(dominant_color, square):
     zone_0 = square[square.shape[0]*3//8:square.shape[0] * 5//8, square.shape[1]*1//8:square.shape[1]*3//8]
     zone_0_color = get_dominant_color(zone_0, 1)
@@ -87,7 +89,7 @@ def process_blue_color(dominant_color, square):
         else:
             print("414")
 
-
+# mapping circles to an image
 def show_circles(circles, frame):
     if circles is not None:
         for i in circles[0, :]:
